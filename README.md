@@ -45,7 +45,7 @@ This api is using Node.js and Express with HTTPS-only request with cookies to au
 
 
 
- 1- To create an account 
+## 1- To create an account 
 
 Route Definition:
 This code defines a route for handling HTTP POST requests to "/users". It uses the jsonParser middleware, configured to parse incoming JSON data from the request body.
@@ -120,7 +120,8 @@ The new user is saved in the database. The response sets an HTTP status code of 
 
 -----------------------------------------
 
-2 - Login route 
+
+## 2 - Login route 
 
 Route Definition:
 This code defines a route for handling HTTP POST requests to "/users/login". It uses the jsonParser middleware to parse incoming JSON data from the request body.
