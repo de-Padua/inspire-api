@@ -464,7 +464,6 @@ app.post("/checkout", jsonParser, async (req, res) => {
 - **Response:**  
   Responds with a 200 status to acknowledge successful processing of the webhook event.
 
-Feel free to use this Markdown code in your documentation!
 
 
 
