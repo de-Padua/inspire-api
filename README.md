@@ -117,7 +117,11 @@ The new user is saved in the database. The response sets an HTTP status code of 
 ```
 
 
+
+-----------------------------------------
+
 2 - Login route 
+
 Route Definition:
 This code defines a route for handling HTTP POST requests to "/users/login". It uses the jsonParser middleware to parse incoming JSON data from the request body.
 
