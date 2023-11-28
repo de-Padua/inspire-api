@@ -146,7 +146,15 @@ This approach enhances security by regularly refreshing the session ID and ensur
   }
 });
 ```
+
+
+bcrypt.compare:
+
+    This is a function provided by the bcrypt library to compare a plain text password (req.body.password) with a hashed password stored in the database (userDataFromDb.password).
+    It takes three parameters: the plain text password, the hashed password from the database, and a callback function to handle the result
  
+
+this code is handling the comparison of a user-provided password with the hashed password stored in the database using bcrypt. If the passwords match, it creates a new session cookie and sends a success response with user data. If the passwords don't match, it sends an error response.
 
 
 ## API Endpoints
