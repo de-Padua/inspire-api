@@ -47,11 +47,30 @@ This api is using Node.js and Express with HTTPS-only request with cookies to au
 
  1- To create an account 
 
- Users need to create an account from a secure env and each user create a new Cookie code when it's acount is created,whe the user account is authenticaded in the server it generetes a session_id code,this sension id code 
- is time-limeted,about 5 hours it will reset and the user will need to be authenticaded again by providing his login data
+When a user creates an account, a unique cookie code is generated for them in a secure environment. This cookie code serves as an identifier for the user. Upon successful authentication of the user's account on the server, a session ID code is generated. This session ID code has a time limit, typically around 5 hours. After this period, the session ID expires, and the user needs to re-authenticate by providing their login credentials again.
+
+Here's a step-by-step breakdown:
+
+    Account Creation:
+        Users create an account, and a unique cookie code is generated for their session in a secure environment.
+
+    Authentication:
+        When a user logs in, the server authenticates their account.
+        If the authentication is successful, a session ID code is generated for that session.
+
+    Session Expiry:
+        The session ID has a time limit, usually set to around 5 hours.
+        After this time period, the session ID expires.
+
+    Re-authentication:
+        Once the session ID expires, the user needs to re-authenticate.
+        Re-authentication involves providing login credentials again to obtain a new session ID.
+
+This approach enhances security by regularly refreshing the session ID and ensuring that users periodically re-verify their identity.
 
 
 ```Javascript
+  app.post("/users/login", jsonParser, async (req, res) => {
   const cookie = req.cookies["SESSION_ID"];
 
   const expirationDate = new Date(Date.now() + 1000 * 60 * 1000);
@@ -59,9 +78,75 @@ This api is using Node.js and Express with HTTPS-only request with cookies to au
   const validateSession = await sessionValidation.findOne({
     SESSION_ID: cookie,
   });
+
+  if (req.body.email === undefined && cookie !== undefined) {
+    const userDataFromDb = await USER_MODEL_DB.findOne({
+      email: validateSession.USER_MAGNET,
+    });
+
+    if (userDataFromDb !== null) {
+      res
+        .cookie("SESSION_ID", validateSession.SESSION_ID, {
+          secure: true,
+          httpOnly: true,
+          sameSite: "none",
+        })
+        .json({
+          sucess: true,
+          data: userDataFromDb,
+        });
+    }
+  } else if (req.body.email !== null && req.body.password !== null) {
+    const userDataFromDb = await USER_MODEL_DB.findOne({
+      email: req.body.email,
+    });
+
+    const deleteOldSession = await sessionValidation.findOneAndDelete({
+      USER_MAGNET: req.body.email,
+    });
+
+    if (userDataFromDb === null) return res.json({ data: "user not found" });
+
+    const newSession = new sessionValidation({
+      SESSION_ID: uuidv4(),
+      USER_MAGNET: req.body.email,
+    });
+
+    await newSession.save();
+
+    bcrypt.compare(
+      req.body.password,
+      userDataFromDb.password,
+      function (err, response) {
+        if (err) {
+          res.json({ data: "internal server error" });
+        }
+        if (res) {
+          console.log(res);
+          res
+            .cookie("SESSION_ID", newSession.SESSION_ID, {
+              expires: expirationDate,
+              secure: true,
+              httpOnly: true,
+              sameSite: "none",
+            })
+            .json({
+              sucess: response,
+              data: userDataFromDb,
+            });
+        } else {
+          // response is OutgoingMessage object that server response http request
+          res.json({
+            success: false,
+            message: "passwords do not match",
+          });
+        }
+      }
+    );
+  }
+});
 ```
  
-
 
 
 ## API Endpoints
