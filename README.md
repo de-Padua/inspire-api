@@ -70,42 +70,28 @@ This approach enhances security by regularly refreshing the session ID and ensur
 
 
 ```Javascript
-  app.post("/users/login", jsonParser, async (req, res) => {
-  const cookie = req.cookies["SESSION_ID"];
-
-  const expirationDate = new Date(Date.now() + 1000 * 60 * 1000);
-
-  const validateSession = await sessionValidation.findOne({
-    SESSION_ID: cookie,
+  app.post("/users", jsonParser, async (req, res) => {
+  const userDataFromDb = await USER_MODEL_DB.findOne({
+    email: req.body.email,
   });
 
-  if (req.body.email === undefined && cookie !== undefined) {
-    const userDataFromDb = await USER_MODEL_DB.findOne({
-      email: validateSession.USER_MAGNET,
+  if (userDataFromDb) {
+    res.json({
+      data: {
+        message: "Email already in use",
+        error: null,
+      },
     });
+  } else {
+    const stripeCustomer = await stripe.customers.create();
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
-    if (userDataFromDb !== null) {
-      res
-        .cookie("SESSION_ID", validateSession.SESSION_ID, {
-          secure: true,
-          httpOnly: true,
-          sameSite: "none",
-        })
-        .json({
-          sucess: true,
-          data: userDataFromDb,
-        });
-    }
-  } else if (req.body.email !== null && req.body.password !== null) {
-    const userDataFromDb = await USER_MODEL_DB.findOne({
+    const newUser = new USER_MODEL_DB({
+      name: req.body.name,
       email: req.body.email,
+      password: hashedPassword,
+      stripe_id: stripeCustomer.id,
     });
-
-    const deleteOldSession = await sessionValidation.findOneAndDelete({
-      USER_MAGNET: req.body.email,
-    });
-
-    if (userDataFromDb === null) return res.json({ data: "user not found" });
 
     const newSession = new sessionValidation({
       SESSION_ID: uuidv4(),
@@ -113,36 +99,22 @@ This approach enhances security by regularly refreshing the session ID and ensur
     });
 
     await newSession.save();
+    await newUser.save();
 
-    bcrypt.compare(
-      req.body.password,
-      userDataFromDb.password,
-      function (err, response) {
-        if (err) {
-          res.json({ data: "internal server error" });
-        }
-        if (res) {
-          console.log(res);
-          res
-            .cookie("SESSION_ID", newSession.SESSION_ID, {
-              expires: expirationDate,
-              secure: true,
-              httpOnly: true,
-              sameSite: "none",
-            })
-            .json({
-              sucess: response,
-              data: userDataFromDb,
-            });
-        } else {
-          // response is OutgoingMessage object that server response http request
-          res.json({
-            success: false,
-            message: "passwords do not match",
-          });
-        }
-      }
-    );
+    res
+      .status(200)
+      .cookie("SESSION_ID", newSession.SESSION_ID, {
+        secure: true,
+        httpOnly: true,
+        sameSite: "none",
+      })
+      .json({
+        data: {
+          message: "user created ",
+          error: null,
+          sucess: true,
+        },
+      });
   }
 });
 ```
