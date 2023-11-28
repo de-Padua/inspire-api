@@ -268,6 +268,174 @@ app.patch("/update/usercart", jsonParser, async (req, res) => {
 });
 ```
 
+----------------
+
+## User Retrieval Endpoint Explanation
+
+- **Route Definition:**  
+  This code defines a route for handling HTTP GET requests to "/users". It uses the `jsonParser` middleware to parse incoming JSON data from the request body.
+
+- **Session Validation:**  
+  It retrieves the session ID from the request cookies and checks if there is a corresponding session in the database using `sessionValidation.findOne`.
+
+- **Handling Missing Session:**  
+  If there is no valid session, it responds with a JSON object indicating failure with a HTTP status code of 400.
+
+- **Handling Valid Session:**  
+  If there is a valid session, it attempts to retrieve all users from the `USER_MODEL_DB`. If successful, it responds with a JSON object containing the user data and a success message.
+
+- **Error Handling:**  
+  There is a try-catch block to catch any potential errors during the user retrieval process. If an error occurs, it is logged to the console.
+
+- **Handling No Session:**  
+  If there is no session cookie in the request, it responds with a JSON object indicating no data with a HTTP status code of 200.
+
+```javascript
+
+
+app.get("/users", jsonParser, async (req, res) => {
+  const cookie = req.cookies["SESSION_ID"];
+
+  const validateSession = await sessionValidation.findOne({
+    SESSION_ID: cookie,
+  });
+
+  if (validateSession === null) {
+    res.status(400).json({
+      sucess: false,
+    });
+  } else if (cookie !== undefined) {
+    try {
+      const users = await USER_MODEL_DB.find();
+      res.json({ data: users, sucess: true });
+    } catch (err) {
+      if (err) {
+        console.log(err);
+      }
+    }
+  } else {
+    res.status(200).json({ data: null });
+  }
+});
+
+
+```
+
+-----------------------------
+
+
+## Checkout Endpoint Explanation
+
+- **Route Definition:**  
+  This code defines a route for handling HTTP POST requests to "/checkout". It uses the `jsonParser` middleware to parse incoming JSON data from the request body.
+
+- **Request Data Retrieval:**  
+  It retrieves product information (`PRODUCTS_FROM_CLIENT`) and user ID (`USERID`) from the request body. Also, it generates a unique purchase ID (`purchase_id`) using `uuidv4()`.
+
+- **User Retrieval:**  
+  It queries the `userModel` to find a user with the specified email (`USERID`).
+
+- **User Existence Check:**  
+  If no user is found, the process is terminated.
+
+- **Logging Product Information:**  
+  It logs the product information received from the client.
+
+- **Quantity Check:**  
+  It uses asynchronous mapping (`Promise.all`) to check if each item in the cart has enough quantity available in the store. The result is an array (`checkStore`) indicating whether each item has enough quantity.
+
+- **Check for Insufficient Quantity:**  
+  If any item in the cart has insufficient quantity, the process is terminated.
+
+- **Formatting Product Data for Stripe:**  
+  It formats the product data from the client to a structure suitable for Stripe Checkout.
+
+- **Creating a Checkout Session:**  
+  It uses the Stripe API to create a new checkout session. The session includes line items, payment mode, shipping address collection details, customer information, success, and cancel URLs.
+
+- **Response:**  
+  It responds with a JSON object containing the Stripe Checkout session URL.
+
+```javascript
+app.post("/checkout", jsonParser, async (req, res) => {
+  const PRODUCTS_FROM_CLIENT = req.body.cart;
+  const USERID = req.body.user;
+
+  const purchase_id = uuidv4();
+
+  const user = await userModel.findOne({ email: USERID });
+
+  if (!user) return;
+
+  console.log(PRODUCTS_FROM_CLIENT);
+
+  //checkStore will return a array with ["true"] or ["false"]
+
+  const checkStore = await Promise.all(
+    PRODUCTS_FROM_CLIENT.map(async (item) => {
+      let data = false;
+
+      const checkIfItemHasEnoughQuantity = await products_model.findOne({
+        title: item.name,
+      });
+
+      if (checkIfItemHasEnoughQuantity.quantity_available < item.quantity) {
+        data = true;
+      }
+
+      return data;
+    })
+  );
+
+ 
+
+
+  if (checkStore.includes(true)) return;
+
+
+  const client_data_products_formated = PRODUCTS_FROM_CLIENT.map((i) => {
+    return {
+      price_data: {
+        currency: "BRL",
+        product_data: {
+          name: i.name,
+        },
+        unit_amount: Math.round(i.price * 100),
+      },
+      quantity: i.quantity,
+    };
+  });
+
+  const session = await stripe.checkout.sessions.create({
+    line_items: client_data_products_formated,
+    mode: "payment",
+
+    shipping_address_collection: {
+      allowed_countries: ["BR"],
+    },
+    custom_text: {
+      shipping_address: {
+        message:
+          "Please note that we can't guarantee 2-day delivery for PO boxes at this time.",
+      },
+      submit: {
+        message: "We'll email you instructions on how to get started.",
+      },
+    },
+    customer: user.stripe_id,
+    success_url: `${domain + purchase_id}?success=true`,
+    cancel_url: `${domain + purchase_id}?canceled=true`,
+  });
+
+  res.json({ url: session.url });
+});
+```
+
+
+
+
+
+
 
 
 
