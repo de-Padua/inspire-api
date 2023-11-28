@@ -1,10 +1,10 @@
-# Your API Name
+# inspire-api
 
 ## Overview
 
-Briefly describe what your API does, its main features, and the problems it solves.
 
-## Table of Contents
+This is my backend for my e-commerce,if you wanna use this api i recommend you to configure it in the way that you need.
+
 
 
 ## Getting Started
@@ -432,6 +432,119 @@ app.post("/checkout", jsonParser, async (req, res) => {
 ```
 
 
+---------------------
+
+## Purchase Webhook Endpoint Explanation
+
+- **Route Definition:**  
+  This code defines a route for handling HTTP POST requests to "/purchasewebhook". It uses `bodyParser.raw` middleware to parse incoming raw JSON data from the request body.
+
+- **Request Data Retrieval:**  
+  It retrieves the raw payload (`payload`) from the request body and the signature (`sig`) from the request headers.
+
+- **Event Validation:**  
+  It attempts to construct a webhook event using the Stripe API (`stripe.webhooks.constructEvent`). If there's an error, it responds with a 400 status and an error message.
+
+- **Event Type Check:**  
+  It checks the type of the webhook event. If it's a "checkout.session.completed" event:
+  - It retrieves the session with line items from Stripe.
+  - Logs the line items data.
+  - Extracts customer ID and creates a new invoice object.
+
+- **Adding Invoice to User:**  
+  - It finds the current user in the database using the customer ID.
+  - Updates the user's database by adding the new invoice and clearing the cart.
+
+- **Updating Products in Database:**  
+  - It iterates over the line items and updates the corresponding products in the database by reducing available quantity and increasing the number of purchases.
+
+- **Handling Payment Failure:**  
+  If the event type is "payment_intent.payment_failed," it can be handled accordingly (currently commented out).
+
+- **Response:**  
+  Responds with a 200 status to acknowledge successful processing of the webhook event.
+
+Feel free to use this Markdown code in your documentation!
+
+
+
+
+
+```javascript
+app.post(
+  "/purchasewebhook",
+  bodyParser.raw({ type: "application/json" }),
+  async (req, res) => {
+    const payload = req.body;
+
+    const sig = req.headers["stripe-signature"];
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(payload, sig, webhook_secret);
+    } catch (err) {
+      return response.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
+        event.data.object.id,
+        {
+          expand: ["line_items"],
+        }
+      );
+      const lineItems = sessionWithLineItems.line_items;
+
+      console.log(lineItems.data);
+
+      const customerId = event.data.object.customer;
+
+      //add invoice to user
+      const newInvoice = {
+        id: event.id,
+        date: formattedDate,
+        total: event.data.object.amount_total,
+        adress: { ...event.data.object.shipping_details },
+        status: event.data.object.status,
+        items: lineItems.data,
+      };
+
+      const currentUser = await userModel.findOne({ stripe_id: customerId });
+
+      const addInvoiceToUserDB = await userModel.findOneAndUpdate(
+        {
+          email: currentUser.email,
+        },
+        { invoices: [...currentUser.invoices, newInvoice], cart: [] }
+      );
+
+      //update products documents
+
+      const updateProducstdb = Promise.all(
+        lineItems.data.forEach(async (element) => {
+          const currentItem = await products_model.findOne({
+            title: element.description,
+          });
+          const updateCurrentItem = await products_model.findOneAndUpdate(
+            { title: currentItem.title },
+            {
+              quantity_available:
+                currentItem.quantity_available - element.quantity,
+              buys: currentItem.buys + element.quantity,
+            }
+          );
+        })
+      );
+    }
+    if (event.type === "payment_intent.payment_failed") {
+      //return to user
+    }
+
+    res.status(200).end();
+  }
+);
+```
 
 
 
@@ -441,20 +554,48 @@ app.post("/checkout", jsonParser, async (req, res) => {
 
 ## API Endpoints
 
-List and describe the available endpoints in your API, including their methods, parameters, and expected responses.
+1. **Logout**
+   - Endpoint: `app.post("/logout", jsonParser, async (req, res) => {...})`
 
+2. **Get Users**
+   - Endpoint: `app.get("/users", jsonParser, async (req, res) => {...})`
+
+3. **Update Users**
+   - Endpoint: `app.patch("/users", jsonParser, async (req, res) => {...})`
+
+4. **Update User Cart**
+   - Endpoint: `app.patch("/update/usercart", jsonParser, async (req, res) => {...})`
+
+5. **Delete User**
+   - Endpoint: `app.delete("/users", jsonParser, async (req, res) => {...})`
+
+6. **Create User**
+   - Endpoint: `app.post("/users", jsonParser, async (req, res) => {...})`
+
+7. **User Login**
+   - Endpoint: `app.post("/users/login", jsonParser, async (req, res) => {...})`
+
+8. **Get Products**
+   - Endpoint: `app.get("/products", jsonParser, async (req, res) => {...})`
+
+9. **Get Product by ID**
+   - Endpoint: `app.get("/products/:id", jsonParser, async (req, res) => {...})`
+
+10. **Test Route**
+    - Endpoint: `app.get("/testRoute", (req, res) => {...})`
+
+11. **Checkout**
+    - Endpoint: `app.post("/checkout", jsonParser, async (req, res) => {...})`
+    
+12. **Purchase Webhook**
+    - Endpoint: `app.post("/purchasewebhook", bodyParser.raw({ type: "application/json" }), async (req, res) => {...})`
+
+
+
+    
 ## Authentication
 
-Explain the authentication mechanism used by your API, whether it's API keys, OAuth, JWT, etc.
-
+This api uses a Cookies-Header-Http-Only approach,you can check out at this  [https://github.com/de-Padua/inspire-api/blob/main/routes/users.js]link 
 ## Error Handling
 
-Document how errors are handled in your API and provide a list of possible error codes and their meanings.
 
-## Examples
-
-Include more detailed examples or use cases to help developers understand how to integrate your API into their projects.
-
-## Contributing
-
-If you're open to contributions, provide guidelines for how others can contribute to your project.
