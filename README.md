@@ -29,12 +29,40 @@ To get started with this project, follow these steps:
 git clone https://github.com/de-Padua/inspire-api
 
 ```
+1. **Install dependecies:**
+
+```npm
+
+npm i 
+
+```
 
 
 
 ### Usage
 
-Explain how to use your API, including any code examples or common use cases.
+This api is using Node.js and Express with HTTPS-only request with cookies to authentication
+
+
+
+ 1- To create an account 
+
+ Users need to create an account from a secure env and each user create a new Cookie code when it's acount is created,whe the user account is authenticaded in the server it generetes a session_id code,this sension id code 
+ is time-limeted,about 5 hours it will reset and the user will need to be authenticaded again by providing his login data
+
+
+```Javascript
+  const cookie = req.cookies["SESSION_ID"];
+
+  const expirationDate = new Date(Date.now() + 1000 * 60 * 1000);
+
+  const validateSession = await sessionValidation.findOne({
+    SESSION_ID: cookie,
+  });
+```
+ 
+
+
 
 ## API Endpoints
 
