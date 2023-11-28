@@ -226,6 +226,49 @@ app.post("/users/login", jsonParser, async (req, res) => {
 });
 ```
 
+----------------------------
+
+## User Cart Update Endpoint Explanation
+
+- **Route Definition:**  
+  This code defines a route for handling HTTP PATCH requests to "/update/usercart". It uses the `jsonParser` middleware to parse incoming JSON data from the request body.
+
+- **Updating User Cart:**  
+  The endpoint attempts to update the user's cart in the database. It uses `updateOne` from the `USER_MODEL_DB` to find the user by email and update the cart with the new data from the request body.
+
+- **Handling Success:**  
+  If the update is successful, it responds with a JSON object containing the updated user data and a success message. The HTTP status code is set to 200.
+
+- **Handling Failure:**  
+  If the update fails for any reason, it responds with a JSON object indicating that something went wrong. The HTTP status code is set to 400.
+
+- **Error Handling:**  
+  There is a try-catch block to catch any potential errors during the update process. If an error occurs, it is logged to the console.
+
+
+```javascript
+app.patch("/update/usercart", jsonParser, async (req, res) => {
+  console.log("ITS HERE");
+
+  try {
+    const updatedUser = await USER_MODEL_DB.updateOne(
+      { email: req.body.email },
+      { cart: req.body.cart }
+    );
+    if (updatedUser) {
+      res.status(200).json({ data: updatedUser, message: "success" });
+    } else {
+      res.status(400).json({ data: null, message: "something went wrong" });
+    }
+  } catch (err) {
+    if (err) {
+      console.log(err);
+    }
+  }
+});
+```
+
+
 
 
 ## API Endpoints
