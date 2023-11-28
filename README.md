@@ -11,11 +11,25 @@ Briefly describe what your API does, its main features, and the problems it solv
 
 ### Prerequisites
 
-Specify any prerequisites or dependencies that developers need to have installed before using your API.
+This api is using Node.js and Express with HTTPS-only request with cookies to authentication
+
+
+Note : This api is still in development and does require alot of configuration,since this is not a tutorial about how to install and use this api,i'll not be provind a step-by-step on how to use it,
+this api is using Stripe as payment method and require you to have a key,make sure that you have one and put it on the .env file on your project
 
 ### Installation
 
-Provide step-by-step instructions on how to install your API, including any configuration steps.
+## Clone this Repository and Install Dependencies
+
+To get started with this project, follow these steps:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone [https://github.com/your-username/your-repo.git](https://github.com/de-Padua/inspire-api)
+
+
+
 
 ### Usage
 
