@@ -24,10 +24,11 @@ this api is using Stripe as payment method and require you to have a key,make su
 To get started with this project, follow these steps:
 
 1. **Clone the repository:**
+```git
 
-   ```bash
-   git clone [https://github.com/your-username/your-repo.git](https://github.com/de-Padua/inspire-api)
+git clone https://github.com/de-Padua/inspire-api
 
+```
 
 
 
