@@ -47,26 +47,23 @@ This api is using Node.js and Express with HTTPS-only request with cookies to au
 
  1- To create an account 
 
-When a user creates an account, a unique cookie code is generated for them in a secure environment. This cookie code serves as an identifier for the user. Upon successful authentication of the user's account on the server, a session ID code is generated. This session ID code has a time limit, typically around 5 hours. After this period, the session ID expires, and the user needs to re-authenticate by providing their login credentials again.
+Route Definition:
+This code defines a route for handling HTTP POST requests to "/users". It uses the jsonParser middleware, configured to parse incoming JSON data from the request body.
 
-Here's a step-by-step breakdown:
+Checking for Existing User:
+Queries the database (USER_MODEL_DB) to check if a user with the specified email already exists.
 
-    Account Creation:
-        Users create an account, and a unique cookie code is generated for their session in a secure environment.
+Handling Existing User:
+If a user with the provided email already exists in the database, it responds with a JSON object indicating that the email is already in use.
 
-    Authentication:
-        When a user logs in, the server authenticates their account.
-        If the authentication is successful, a session ID code is generated for that session.
+Creating a New User:
+If the email is not in use, it proceeds to create a new user. It uses the Stripe API to create a new customer, hashes the password using bcrypt, and creates a new user object with the provided name, email, hashed password, and a Stripe customer ID.
 
-    Session Expiry:
-        The session ID has a time limit, usually set to around 5 hours.
-        After this time period, the session ID expires.
+Creating a New Session:
+It creates a new session using a model named sessionValidation. The session ID is generated and associated with the user's email. The session is then saved in the database.
 
-    Re-authentication:
-        Once the session ID expires, the user needs to re-authenticate.
-        Re-authentication involves providing login credentials again to obtain a new session ID.
-
-This approach enhances security by regularly refreshing the session ID and ensuring that users periodically re-verify their identity.
+Setting Cookie and Responding:
+The new user is saved in the database. The response sets an HTTP status code of 200, sets a cookie named "SESSION_ID" with the session ID, and sends a JSON response indicating that the user has been created successfully.
 
 
 ```Javascript
