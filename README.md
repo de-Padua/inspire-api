@@ -117,13 +117,110 @@ The new user is saved in the database. The response sets an HTTP status code of 
 ```
 
 
-bcrypt.compare:
+2 - Login route 
+Route Definition:
+This code defines a route for handling HTTP POST requests to "/users/login". It uses the jsonParser middleware to parse incoming JSON data from the request body.
 
-    This is a function provided by the bcrypt library to compare a plain text password (req.body.password) with a hashed password stored in the database (userDataFromDb.password).
-    It takes three parameters: the plain text password, the hashed password from the database, and a callback function to handle the result
- 
+Checking for Existing Session:
+It retrieves the session ID from the request cookies and checks if there is a corresponding session in the database.
 
-this code is handling the comparison of a user-provided password with the hashed password stored in the database using bcrypt. If the passwords match, it creates a new session cookie and sends a success response with user data. If the passwords don't match, it sends an error response.
+Handling Existing Session without Credentials:
+If the request body does not contain email and there is a valid session cookie, it retrieves user data from the database based on the session's user email. If the user exists, it sets a new session cookie and responds with the user data.
+
+Handling Login Attempt:
+If the request body contains email and password, it attempts to find the user in the database. If the user is not found, it responds with a message indicating that the user was not found.
+
+Deleting Old Session:
+If the user is found, it deletes any existing sessions for that user.
+
+Creating a New Session:
+It creates a new session for the user, associating it with a new session ID.
+
+Password Comparison:
+It uses bcrypt to compare the provided password with the hashed password from the database. If there's an error during comparison, it responds with an internal server error. If the passwords match, it sets a new session cookie, specifies the expiration date, and responds with a success message and user data.
+
+Password Mismatch Handling:
+If the passwords do not match, it responds with a message indicating that the passwords do not match.
+
+
+```javascript
+app.post("/users/login", jsonParser, async (req, res) => {
+  const cookie = req.cookies["SESSION_ID"];
+
+  const expirationDate = new Date(Date.now() + 1000 * 60 * 1000);
+
+  const validateSession = await sessionValidation.findOne({
+    SESSION_ID: cookie,
+  });
+
+  if (req.body.email === undefined && cookie !== undefined) {
+    const userDataFromDb = await USER_MODEL_DB.findOne({
+      email: validateSession.USER_MAGNET,
+    });
+
+    if (userDataFromDb !== null) {
+      res
+        .cookie("SESSION_ID", validateSession.SESSION_ID, {
+          secure: true,
+          httpOnly: true,
+          sameSite: "none",
+        })
+        .json({
+          sucess: true,
+          data: userDataFromDb,
+        });
+    }
+  } else if (req.body.email !== null && req.body.password !== null) {
+    const userDataFromDb = await USER_MODEL_DB.findOne({
+      email: req.body.email,
+    });
+
+    const deleteOldSession = await sessionValidation.findOneAndDelete({
+      USER_MAGNET: req.body.email,
+    });
+
+    if (userDataFromDb === null) return res.json({ data: "user not found" });
+
+    const newSession = new sessionValidation({
+      SESSION_ID: uuidv4(),
+      USER_MAGNET: req.body.email,
+    });
+
+    await newSession.save();
+
+    bcrypt.compare(
+      req.body.password,
+      userDataFromDb.password,
+      function (err, response) {
+        if (err) {
+          res.json({ data: "internal server error" });
+        }
+        if (res) {
+          console.log(res);
+          res
+            .cookie("SESSION_ID", newSession.SESSION_ID, {
+              expires: expirationDate,
+              secure: true,
+              httpOnly: true,
+              sameSite: "none",
+            })
+            .json({
+              sucess: response,
+              data: userDataFromDb,
+            });
+        } else {
+          // response is OutgoingMessage object that server response http request
+          res.json({
+            success: false,
+            message: "passwords do not match",
+          });
+        }
+      }
+    );
+  }
+});
+```
+
 
 
 ## API Endpoints
