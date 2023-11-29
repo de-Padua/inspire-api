@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 
-const PORT =  3030;
+const PORT = process.env.PORT || 3030;
 //set db connection
 
 mongoose.connect(process.env.DATABASE_URL);
