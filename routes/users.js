@@ -12,8 +12,10 @@ const { Console } = require("console");
 const jsonParser = bodyParser.json();
 const stripeURL = process.env.STRIPE_PUBLIC_KEY;
 const stripe = require("stripe")(stripeURL);
+
+
 app.use(cookieParser());
-app.use(cors({ origin: "https://inspire-xlo7.vercel.app", credentials: true }));
+app.use(cors({ origin: "https://inspire-chi.vercel.app", credentials: true }));
 
 app.post("/logout", jsonParser, async (req, res) => {
   const cookie = req.cookies["SESSION_ID"];

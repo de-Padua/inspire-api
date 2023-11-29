@@ -8,7 +8,7 @@ const stripe = require("./routes/stripe");
 
 
 const corsOptions = {
-  origin: "https://inspire-jucpgfbd9-antonios-projects-92441c28.vercel.app", // Substitua pelo seu domínio
+  origin: "https://inspire-chi.vercel.app", // Substitua pelo seu domínio
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
