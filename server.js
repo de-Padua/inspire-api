@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 
-const PORT = process.env.PORT || 3030;
+const PORT =  3030;
 //set db connection
 
 mongoose.connect(process.env.DATABASE_URL);
@@ -18,7 +18,7 @@ db.once("open", () => {
   console.log("Connect to database");
 });
 
-app.listen(port, (err) => {
+app.listen(PORT, (err) => {
   if (err) throw err;
   console.log("server is on");
 });
