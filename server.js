@@ -6,6 +6,18 @@ const mongoose = require("mongoose");
 const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 
+
+const corsOptions = {
+  origin: "https://inspire-xlo7.vercel.app", // Substitua pelo seu domínio
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+
+app.use(cors(corsOptions));
+
+
 const PORT = process.env.PORT || 3030;
 //set db connection
 

@@ -10,9 +10,9 @@ const cors = require("cors");
 const userModel = require("../models/user_model");
 const products_model = require("../models/products_model");
 
-app.use(cors({ origin: "https://http://inspire-xlo7.vercel.app", credentials: true }));
+app.use(cors({ origin: "https://inspire-xlo7.vercel.app", credentials: true }));
 
-const domain = "https://http://inspire-xlo7.vercel.app:3000/purchase/sucess/";
+const domain = "https://inspire-xlo7.vercel.app:3000/purchase/sucess/";
 
 const currentDate = new Date();
 const formattedDate = currentDate.toLocaleDateString();
