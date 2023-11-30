@@ -17,9 +17,9 @@ const stripe = require("stripe")(stripeURL);
 
 
 app.use(cookieParser());
-app.use(cors({ origin: "https://inspire-chi.vercel.app", credentials: true }));
+app.use(cors({ origin: "http://inspire-chi.vercel.app", credentials: true }));
 
-
+ 
 app.get("/testendpoint",jsonParser,(req,res)=>{
   res.json({data:"working"})
 })
