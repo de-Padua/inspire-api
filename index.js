@@ -7,16 +7,6 @@ const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 const cors = require("cors")
 
-const corsOptions = {
-  origin: "https://inspire-chi.vercel.app", // Substitua pelo seu domínio
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
-
-
-app.use(cors(corsOptions));
-
 
 const PORT = process.env.PORT || 3030;
 //set db connection
@@ -29,6 +19,11 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
   console.log("Connect to database");
 });
+
+
+app.get("/",(res,req)=>{
+  req.json({data:"ok"})
+})
 
 app.listen(PORT, (err) => {
   if (err) throw err;
