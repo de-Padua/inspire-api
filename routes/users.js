@@ -13,16 +13,12 @@ const jsonParser = bodyParser.json();
 const stripeURL = process.env.STRIPE_PUBLIC_KEY;
 const stripe = require("stripe")(stripeURL);
 
-
-
-
 app.use(cookieParser());
-app.use(cors({ origin: "http://inspire-chi.vercel.app", credentials: true }));
+app.use(cors({ origin: "*", credentials: true }));
 
- 
-app.get("/testendpoint",jsonParser,(req,res)=>{
-  res.json({data:"working"})
-})
+app.get("/testendpoint", jsonParser, (req, res) => {
+  res.json({ data: "working" });
+});
 
 app.post("/logout", jsonParser, async (req, res) => {
   const cookie = req.cookies["SESSION_ID"];
@@ -239,14 +235,16 @@ app.post("/users/login", jsonParser, async (req, res) => {
 });
 
 app.get("/products", jsonParser, async (req, res) => {
-  const products = await productsDB.find();
-
-  res.json(products);
+  try {
+    const products = await productsDB.find();
+    res.json(products);
+  } catch (err) {
+    res.json({ err: err });
+  }
 });
 app.get("/products/:id", jsonParser, async (req, res) => {
   try {
     const product = await productsDB.findOne({ _id: req.params.id });
-
     if (product === null) {
       res.json({ data: "no product found" });
     } else {
@@ -256,7 +254,7 @@ app.get("/products/:id", jsonParser, async (req, res) => {
 });
 
 app.get("/testRoute", (req, res) => {
- res.status(400)
-})
+  res.status(400);
+});
 
 module.exports = app;
