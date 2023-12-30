@@ -10,7 +10,7 @@ const stripe = require("./routes/stripe");
 const PORT = process.env.PORT || 3030;
 //set db connection
 
-mongoose.connect(process.env.DATABASE_URL);
+mongoose.connect(process.env.MONGODB_URI);
 const db = mongoose.connection;
 
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
