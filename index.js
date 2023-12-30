@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
-
+const cors = require('cors')
 
 app.use(cors({ origin: ["https://inspire-chi.vercel.app"], credentials: true }));
 
