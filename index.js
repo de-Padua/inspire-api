@@ -7,6 +7,9 @@ const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 const cors = require('cors')
 
+const PORT = process.env.PORT || 3030;
+//set db connection
+
 app.use(cors({ origin: ["https://inspire-chi.vercel.app"], credentials: true }));
 
 
@@ -17,9 +20,6 @@ app.listen(PORT, (err) => {
 
 app.use(stripe);
 app.use(usersRoute);
-
-const PORT = process.env.PORT || 3030;
-//set db connection
 
 mongoose.connect(process.env.MONGODB_URI);
 const db = mongoose.connection;
