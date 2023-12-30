@@ -10,7 +10,7 @@ const cors = require("cors");
 const userModel = require("../models/user_model");
 const products_model = require("../models/products_model");
 
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({ origin: ["https://inspire-chi.vercel.app"], credentials: true }));
 
 const domain = "*/purchase/sucess/";
 
