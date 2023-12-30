@@ -7,6 +7,17 @@ const usersRoute = require("./routes/users");
 const stripe = require("./routes/stripe");
 
 
+app.use(cors({ origin: ["https://inspire-chi.vercel.app"], credentials: true }));
+
+
+app.listen(PORT, (err) => {
+  if (err) throw err;
+  console.log("server is on");
+});
+
+app.use(stripe);
+app.use(usersRoute);
+
 const PORT = process.env.PORT || 3030;
 //set db connection
 
@@ -24,10 +35,3 @@ app.get("/",(res,req)=>{
   req.json({data:"ok"})
 })
 
-app.listen(PORT, (err) => {
-  if (err) throw err;
-  console.log("server is on");
-});
-
-app.use(stripe);
-app.use(usersRoute);
