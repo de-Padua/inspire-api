@@ -10,7 +10,7 @@ const cors = require('cors')
 const PORT = process.env.PORT || 3030;
 //set db connection
 
-app.use(cors({ origin: ["https://inspire-chi.vercel.app"], credentials: true }));
+app.use(cors({ origin: "https://inspire-chi.vercel.app", credentials: true }));
 
 
 app.listen(PORT, (err) => {
