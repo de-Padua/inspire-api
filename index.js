@@ -10,6 +10,12 @@ const cors = require('cors')
 const PORT = process.env.PORT || 3030;
 //set db connection
 
+
+app.get("/",(res,req)=>{
+  req.json({data:"ok"})
+})
+
+
 app.use(cors({ origin: "https://inspire-chi.vercel.app", credentials: true }));
 
 
@@ -18,8 +24,6 @@ app.listen(PORT, (err) => {
   console.log("server is on");
 });
 
-app.use(stripe);
-app.use(usersRoute);
 
 mongoose.connect(process.env.MONGODB_URI);
 const db = mongoose.connection;
@@ -27,11 +31,14 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 db.once("open", () => {
-  console.log("Connect to database");
-});
+  console.log("Connected to the database");
 
-
-app.get("/",(res,req)=>{
-  req.json({data:"ok"})
+  
 })
 
+
+
+
+
+app.use(stripe);
+app.use(usersRoute);
