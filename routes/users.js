@@ -8,7 +8,6 @@ const sessionValidation = require("../models/session_model");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
-const { Console } = require("console");
 const jsonParser = bodyParser.json();
 const stripeURL = process.env.STRIPE_PUBLIC_KEY;
 const stripe = require("stripe")(stripeURL);
@@ -113,7 +112,7 @@ app.delete("/users", jsonParser, async (req, res) => {
 app.post("/users", jsonParser, async (req, res) => {
   const userDataFromDb = await USER_MODEL_DB.findOne({
     email: req.body.email,
-  });
+  }); 
 
   if (userDataFromDb) {
     res.json({
@@ -254,7 +253,7 @@ app.get("/products/:id", jsonParser, async (req, res) => {
 });
 
 app.get("/testRoute", (req, res) => {
-  res.status(400);
+  res.status(400).json({data:"test"})
 });
 
 module.exports = app;
